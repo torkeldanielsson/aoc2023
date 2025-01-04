@@ -1,6 +1,6 @@
 use std::{error::Error, time::Instant};
 
-use glam::{ivec2, IVec2};
+use glam::ivec2;
 use rustc_hash::FxHashSet;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -57,20 +57,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     println!("res: {}, {} us", map.len(), t.elapsed().as_micros());
-
-    /*
-    for y in range_y.x..=range_y.y {
-        for x in range_x.x..=range_x.y {
-            let p = ivec2(x, y);
-            if map.contains(&p) {
-                print!("#")
-            } else {
-                print!(".")
-            }
-        }
-        println!()
-    }
-    */
 
     Ok(())
 }
