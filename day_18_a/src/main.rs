@@ -39,8 +39,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    println!("{range_x} {range_y}");
-
     let mut to_fill = Vec::new();
 
     to_fill.push(ivec2(1, 1));
