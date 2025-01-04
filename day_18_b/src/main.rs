@@ -85,6 +85,30 @@ fn main() -> Result<(), Box<dyn Error>> {
                         continue 'bar_loop;
                     }
 
+                    // bridge
+                    let mut j = 0;
+                    while j < active_horizontal.len() {
+                        if i == j {
+                            j += 1;
+                            continue;
+                        }
+
+                        let ah2_min = active_horizontal[j].0.x.min(active_horizontal[j].1.x);
+                        let ah2_max = active_horizontal[j].0.x.max(active_horizontal[j].1.x);
+
+                        if ah_max == bar_min && bar_max == ah2_min {
+                            active_horizontal
+                                .push((i64vec2(ah_min, top_pos), i64vec2(ah2_max, top_pos)));
+
+                            active_horizontal.remove(i.max(j));
+                            active_horizontal.remove(i.min(j));
+
+                            continue 'bar_loop;
+                        }
+
+                        j += 1;
+                    }
+
                     // extension
                     if ah_min == bar_min {
                         res += (bar_max - bar_min) as u64;
@@ -122,12 +146,24 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                         continue 'bar_loop;
                     }
+
+                    if ah_min < bar_min && ah_max > bar_min {
+                        panic!("unexpected 1 {bar_min} {bar_max}, {ah_min} {ah_max}")
+                    }
+                    if ah_min < bar_max && ah_max > bar_max {
+                        println!("{active_horizontal:?}");
+
+                        panic!("unexpected 2 {bar_min} {bar_max}, {ah_min} {ah_max}, {top_pos}")
+                    }
+
                     i += 1;
                 }
                 active_horizontal.push(*bar);
             }
         }
     }
+
+    println!("{active_horizontal:?}");
 
     println!("res: {res}, {} us", t.elapsed().as_micros());
 
