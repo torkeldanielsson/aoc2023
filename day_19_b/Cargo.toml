@@ -1,0 +1,8 @@
+[package]
+name = "day_19_b"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rustc-hash = "2"
+range-set = "0.0.11"
