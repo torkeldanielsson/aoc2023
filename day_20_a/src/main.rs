@@ -6,12 +6,13 @@ use rustc_hash::FxHashMap;
 enum TargetType {
     Conjunction,
     FlipFlop,
+    Unknown,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
     let t = Instant::now();
 
-    let input = include_str!("../test1");
+    let input = include_str!("../input");
 
     let mut broadcaster_targets = Vec::new();
     let mut conjunctions = FxHashMap::default();
@@ -40,27 +41,24 @@ fn main() -> Result<(), Box<dyn Error>> {
         let parts: Vec<&str> = line.split(" -> ").collect();
         let destinations: Vec<&str> = parts[1].split(", ").collect();
 
-        if parts[0] == "broadcaster" {
-            continue;
-        }
-
         let key = &parts[0][1..];
 
         for destination in &destinations {
             if let Some(conjunction) = conjunctions.get_mut(destination) {
                 conjunction.insert(key, false);
                 target_type.insert(*destination, TargetType::Conjunction);
-            }
-            if flip_flops.get_mut(destination).is_some() {
+            } else if flip_flops.get_mut(destination).is_some() {
                 target_type.insert(*destination, TargetType::FlipFlop);
+            } else {
+                target_type.insert(*destination, TargetType::Unknown);
             }
         }
 
         targets.insert(key, destinations);
     }
 
-    let mut low_pulses = 0;
-    let mut high_pulses = 0;
+    let mut low_pulses = 0_u64;
+    let mut high_pulses = 0_u64;
 
     for _ in 0..1000 {
         low_pulses += 1; // push button
@@ -82,6 +80,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let mut new_active = Vec::new();
 
             for a in &active {
+                // println!("{} -{}-> {}", a.0, if a.2 { "high" } else { "low" }, a.1);
                 match target_type[a.1] {
                     TargetType::Conjunction => {
                         conjunctions.entry(a.1).and_modify(|e| {
@@ -95,11 +94,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                             }
                         }
                         for target in &targets[a.1] {
-                            new_active.push((a.1, *target, all_high));
+                            new_active.push((a.1, *target, !all_high));
                         }
                     }
                     TargetType::FlipFlop => {
-                        if a.2 {
+                        if !a.2 {
                             let state = !flip_flops[a.1];
                             *flip_flops.get_mut(a.1).unwrap() = state;
                             for target in &targets[a.1] {
@@ -107,13 +106,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                             }
                         }
                     }
+                    TargetType::Unknown => {}
                 }
             }
             active = new_active;
         }
     }
 
-    println!("low_pulses: {low_pulses}, high_pulses: {high_pulses}");
+    let res = low_pulses * high_pulses;
+
+    println!("res: {res}, {} us", t.elapsed().as_micros());
 
     Ok(())
 }
